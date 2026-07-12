@@ -3,13 +3,9 @@
 [![CI](https://github.com/s2-streamstore/nfs-crust/actions/workflows/ci.yml/badge.svg)](https://github.com/s2-streamstore/nfs-crust/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/s2-streamstore/nfs-crust/blob/main/LICENSE)
 
-An async NFSv4.1 client for Rust applications that want to access an export
-without creating an OS mount point.
-
-`nfs-crust` presents a small, object-like API over real files and directories.
-It is designed for immutable records such as log chunks, segments, and
-content-addressed blobs. Files are written through a temporary name and
-published atomically, so readers never see a partial destination.
+`nfs-crust` lets Tokio applications read and atomically publish whole files on
+an NFSv4.1 export without creating an OS mount point. It is designed for
+immutable data such as log chunks, segments, and content-addressed blobs.
 
 > [!WARNING]
 > This project is experimental. Its authors do not use it in production, and
@@ -66,8 +62,7 @@ async fn main() -> Result<(), Error> {
 
 The first builder argument is the NFS server address and the second is the
 export path. The resulting `NfsClient` acts as a virtual mount. It is cloneable
-and can be shared across Tokio tasks; NFSv4.1 session slots bound concurrent
-protocol work.
+and can be shared across Tokio tasks.
 
 ## API
 
@@ -153,28 +148,16 @@ credential provider through `EfsIamConfig`. The client uses it to generate a
 short-lived EFS client certificate for each TLS connection. NFS operations
 continue to use AUTH_SYS credentials.
 
-## Performance and Configuration
+## Configuration
 
-Small reads and puts are combined into as few NFS compounds as possible. Large
-reads and writes are chunked and pipelined across session slots. One
-`NfsClient` currently uses one TCP connection; applications that hit a
+The defaults use 1 MiB transfer chunks, a 128 MiB buffered-read limit, and
+30-second connect and operation timeouts. The builder exposes these limits,
+along with file and directory modes.
+
+One `NfsClient` uses one TCP connection. Applications that reach a
 per-connection throughput limit can create multiple clients and distribute
-work across them.
-
-Defaults are tuned for bounded memory use and EFS-style request pricing:
-
-- 64 requested session slots, with at most 16 used by one pipelined operation;
-- 1 MiB read and write chunks, with 128 KiB read granularity;
-- 30 second connect and operation timeouts;
-- a 128 MiB buffered-read limit; and
-- file and directory modes of `0644` and `0755`.
-
-The builder exposes the commonly useful limits. In particular, servers that
-charge only for bytes returned may benefit from raising `read_granularity`
-toward `read_chunk_size`. Benchmark against the real server and network path.
-
-NFS servers may serialize mutations within a directory. Hash-sharding keys
-across subdirectories can reduce contention and keep listing pages small.
+work across them. Benchmark against the server and network path used in
+production.
 
 ## Security
 
@@ -187,18 +170,13 @@ On Unix, the default AUTH_SYS credential uses the process's effective user and
 group IDs plus supplementary groups. Other platforms must configure an
 explicit `AuthSys` value.
 
-The client bounds RPC records, decoded values, compound sizes, file handles,
-and buffered reads. It does not persist AWS credentials.
+## Learn More
 
-## More Detail
-
-- [Architecture notes](https://github.com/s2-streamstore/nfs-crust/blob/main/docs/architecture.md) cover NFS compounds, session and
-  reconnect behavior, concurrency, and protocol safety boundaries.
-- [Testing notes](https://github.com/s2-streamstore/nfs-crust/blob/main/docs/testing.md) cover the embedded test server and external
-  interoperability suite.
-- [Benchmark notes](https://github.com/s2-streamstore/nfs-crust/blob/main/bench/README.md) cover the benchmark harness and report
-  generation.
-- [Published benchmark reports](https://s2-streamstore.github.io/nfs-crust/) provide sanitized AWS EFS comparisons with
-  the Linux NFSv4.1 client.
+- [Architecture notes](https://github.com/s2-streamstore/nfs-crust/blob/main/docs/architecture.md)
+  explain the protocol design, concurrency model, and reconnect behavior.
+- [Benchmark results](https://s2-streamstore.github.io/nfs-crust/) compare
+  `nfs-crust` with the Linux NFSv4.1 client on AWS EFS.
+- [Testing notes](https://github.com/s2-streamstore/nfs-crust/blob/main/docs/testing.md)
+  explain how to run the test suites when contributing.
 
 Licensed under the [MIT License](https://github.com/s2-streamstore/nfs-crust/blob/main/LICENSE).
