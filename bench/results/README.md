@@ -9,4 +9,4 @@ every attempt, and commit only runs whose report marks the measurement valid.
 Add runs through `bench/aws/publish_results.py`; it sanitizes infrastructure
 identifiers and rejects unsafe output before making the result visible here.
 Rendered reports are published at
-<https://vigilant-adventure-v65n5kn.pages.github.io/>.
+<https://s2-streamstore.github.io/nfs-crust/>.

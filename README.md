@@ -198,7 +198,7 @@ and buffered reads. It does not persist AWS credentials.
   interoperability suite.
 - [Benchmark notes](https://github.com/s2-streamstore/nfs-crust/blob/main/bench/README.md) cover the benchmark harness and report
   generation.
-- [Published benchmark reports](https://vigilant-adventure-v65n5kn.pages.github.io/) provide sanitized AWS EFS comparisons with
+- [Published benchmark reports](https://s2-streamstore.github.io/nfs-crust/) provide sanitized AWS EFS comparisons with
   the Linux NFSv4.1 client.
 
 Licensed under the [MIT License](https://github.com/s2-streamstore/nfs-crust/blob/main/LICENSE).
