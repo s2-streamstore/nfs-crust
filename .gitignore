@@ -1,0 +1,6 @@
+/target/
+.DS_Store
+/.agents/worktrees/
+/.bench/
+/.codex/
+/_site/

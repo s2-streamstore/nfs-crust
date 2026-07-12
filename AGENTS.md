@@ -1,0 +1,1 @@
+- Greenfield project so we need hygeine and clarity, not legacy preservation – whether in design or code
